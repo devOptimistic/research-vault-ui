@@ -1,27 +1,17 @@
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { inject } from '@angular/core';
-import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap } from 'rxjs';
-import { tapResponse } from '@ngrx/operators';
+import { signalStore, withState, withMethods, withComputed, patchState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
 import { AuthService } from '../core/services/auth.service';
 
-export interface AuthState {
-  isAuthenticated: boolean;
+interface AuthState {
   token: string | null;
+  email: string | null; // Store user email to display across the app
   isLoading: boolean;
   error: string | null;
 }
 
-const getStoredToken = (): string | null => {
-  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-    return localStorage.getItem('jwt_token');
-  }
-  return null;
-};
-
 const initialState: AuthState = {
-  isAuthenticated: !!getStoredToken(),
-  token: getStoredToken(),
+  token: localStorage.getItem('access_token'),
+  email: localStorage.getItem('user_email'), // Retrieve user email from storage if available
   isLoading: false,
   error: null,
 };
@@ -29,41 +19,41 @@ const initialState: AuthState = {
 export const AuthStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  // Inject the domain-specific AuthService
+  withComputed((store) => ({
+    // Derived computed signal to check if the user is authenticated
+    isAuthenticated: computed(() => !!store.token()),
+  })),
   withMethods((store, authService = inject(AuthService)) => ({
-    
-    login: rxMethod<{ email: string; password: string }>(
-      pipe(
-        tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap((credentials) => {
-          // Call the service directly, keeping the store logic pure and clean
-          return authService.login(credentials).pipe(
-            tapResponse({
-              next: (response) => {
-                localStorage.setItem('jwt_token', response.access_token);
-                patchState(store, {
-                  isAuthenticated: true,
-                  token: response.access_token,
-                  isLoading: false,
-                });
-              },
-              error: (err: any) => {
-                patchState(store, {
-                  error: err.error?.detail || 'Authentication failed',
-                  isLoading: false,
-                });
-              },
-            })
-          );
-        })
-      )
-    ),
+    login(credentials: { email: string; password: string }) {
+      patchState(store, { isLoading: true, error: null });
+
+      return authService.login(credentials).subscribe({
+        next: (response) => {
+          // Persist token and user email in localStorage
+          localStorage.setItem('access_token', response.access_token);
+          localStorage.setItem('user_email', credentials.email);
+
+          patchState(store, {
+            token: response.access_token,
+            email: credentials.email, // Save email into the signal state
+            isLoading: false
+          });
+        },
+        error: (err) => {
+          patchState(store, { 
+            isLoading: false, 
+            error: err.error?.detail || 'Invalid email or password' 
+          });
+        }
+      });
+    },
 
     logout() {
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        localStorage.removeItem('jwt_token');
-      }
-      patchState(store, { isAuthenticated: false, token: null, isLoading: false, error: null });
+      // Clear all authentication data from localStorage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_email');
+
+      patchState(store, { token: null, email: null });
     }
   }))
 );

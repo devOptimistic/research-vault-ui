@@ -1,0 +1,73 @@
+<div class="w-full max-w-md bg-[#3e445b] rounded-[2rem] shadow-2xl border border-slate-700/50 p-8 sm:p-10 relative overflow-hidden">
+  
+  <!-- Decorative background blur effect -->
+  <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-indigo-500/20 blur-[50px] rounded-full pointer-events-none"></div>
+
+  <div class="mb-8 relative z-10">
+    <h2 class="text-3xl font-extrabold text-white tracking-tight">Log in</h2>
+    <p class="text-slate-300 mt-2 text-sm font-medium leading-relaxed">
+      Welcome back — access your research projects.
+    </p>
+  </div>
+
+  <!-- Store error handling using modern @if control flow -->
+  @if (authStore.error()) {
+    <div class="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-xl mb-6 text-sm relative z-10">
+      {{ authStore.error() }}
+    </div>
+  }
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5 relative z-10">
+    <div>
+      <label class="block text-sm font-semibold text-slate-300 mb-2">Email</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        </div>
+        <input 
+          type="email" 
+          formControlName="email"
+          placeholder="you@example.com" 
+          class="w-full pl-11 pr-4 py-3.5 bg-[#2d3248] border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all shadow-inner">
+      </div>
+      
+      <!-- Display form validation errors -->
+      @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+        <div class="text-red-400 text-xs mt-1 pl-1">Invalid email format.</div>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-slate-300 mb-2">Password</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <input 
+          type="password" 
+          formControlName="password"
+          placeholder="••••••••" 
+          class="w-full pl-11 pr-4 py-3.5 bg-[#2d3248] border border-slate-600 rounded-xl text-white tracking-widest placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all shadow-inner">
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="authStore.isLoading() || loginForm.invalid" class="w-full py-3.5 mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all active:scale-95 text-center flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer">
+      
+      <!-- Conditional rendering for button states using @if -->
+      @if (authStore.isLoading()) {
+        <span>Logging in...</span>
+      } @else {
+        <span>Log in</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+      }
+    </button>
+  </form>
+
+  <!-- Navigation link to the registration page -->
+  <div class="mt-8 text-center relative z-10 pt-6 border-t border-slate-600/50">
+    <p class="text-sm text-slate-400 font-medium">
+      Don't have an account? 
+      <a routerLink="/register" class="text-indigo-400 hover:text-indigo-300 font-bold hover:underline underline-offset-4 transition-colors">Create one</a>
+    </p>
+  </div>
+</div>
