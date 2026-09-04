@@ -1,0 +1,173 @@
+<!-- Main Content -->
+<main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 mt-2 mb-12">
+
+    <!-- Main Dark Card -->
+    <div class="bg-[#3e445b] rounded-[2rem] shadow-2xl overflow-hidden border border-slate-700/50 p-6 sm:p-10 relative">
+
+        <!-- Header / Back Button -->
+        <div class="mb-8">
+            <a routerLink="/dashboard"
+                class="inline-flex items-center text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors mb-3">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to projects
+            </a>
+            <h2 class="text-3xl font-extrabold text-white tracking-tight">My Project</h2>
+            <p class="text-slate-400 mt-1 text-sm font-medium">Project ID: {{ projectId() }}</p>
+        </div>
+
+        <!-- Global Search & Export -->
+        <div class="mb-8 space-y-4">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" placeholder="Search notes & links..."
+                        class="w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all shadow-inner">
+                </div>
+                <button
+                    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:shadow-[0_0_20px_rgba(79,70,229,0.6)] transition-all active:scale-95">
+                    Search
+                </button>
+            </div>
+
+            <button
+                class="inline-flex items-center gap-2 px-4 py-2 bg-[#2d3248] border border-slate-600 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export as Markdown
+            </button>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="border-b border-slate-600/50 mb-8 flex gap-2 overflow-x-auto hide-scrollbar">
+            <button (click)="switchTab('notes')" id="btn-notes"
+                [class]="activeTab() === 'notes' ? 'tab-btn pb-3 px-4 text-sm font-bold text-indigo-400 border-b-2 border-indigo-400 transition-colors whitespace-nowrap' : 'tab-btn pb-3 px-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent transition-colors whitespace-nowrap'">
+                Notes
+            </button>
+            <button (click)="switchTab('links')" id="btn-links"
+                [class]="activeTab() === 'links' ? 'tab-btn pb-3 px-4 text-sm font-bold text-indigo-400 border-b-2 border-indigo-400 transition-colors whitespace-nowrap' : 'tab-btn pb-3 px-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent transition-colors whitespace-nowrap'">
+                Links
+            </button>
+            <button (click)="switchTab('websearch')" id="btn-websearch"
+                [class]="activeTab() === 'websearch' ? 'tab-btn pb-3 px-4 text-sm font-bold text-indigo-400 border-b-2 border-indigo-400 transition-colors whitespace-nowrap' : 'tab-btn pb-3 px-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent transition-colors whitespace-nowrap'">
+                Web Search
+            </button>
+            <button (click)="switchTab('tags')" id="btn-tags"
+                [class]="activeTab() === 'tags' ? 'tab-btn pb-3 px-4 text-sm font-bold text-indigo-400 border-b-2 border-indigo-400 transition-colors whitespace-nowrap' : 'tab-btn pb-3 px-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent transition-colors whitespace-nowrap'">
+                Tags
+            </button>
+        </div>
+
+        <!-- ================= TABS CONTENT ================= -->
+
+        <!-- TAB 1: Notes -->
+        @if (activeTab() === 'notes') {
+        <div id="tab-notes" class="tab-content active">
+            <app-note-create [projectId]="projectId()" />
+            <app-note-list [projectId]="projectId()" />
+        </div>
+        }
+
+        <!-- TAB 2: Links -->
+        @if (activeTab() === 'links') {
+        <div id="tab-links" class="tab-content active">
+            <p class="text-sm text-slate-400 mb-6 font-medium">Links saved from the Web Search tab show up here.</p>
+
+            <div
+                class="bg-[#2d3248] border border-slate-600/50 rounded-xl p-6 shadow-inner hover:border-slate-500 transition-colors">
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-3">
+                    <h3 class="text-lg font-bold text-white leading-snug">What is RxJS?. RxJS (Reactive Extensions
+                        for...)</h3>
+                    <span
+                        class="px-2.5 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-extrabold rounded-md uppercase tracking-wider">Pending</span>
+                </div>
+
+                <a href="#"
+                    class="text-blue-400 hover:text-blue-300 text-sm underline underline-offset-4 mb-3 inline-block break-all">
+                    https://medium.com/@bbcpatra/what-is-rxjs-edc739251f56
+                </a>
+
+                <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                    What is RxJS? RxJS (Reactive Extensions for JavaScript) is a powerful library for reactive
+                    programming...
+                </p>
+
+                <p class="text-sm text-slate-500 mb-5 font-medium">No tags</p>
+
+                <div class="flex flex-wrap gap-3">
+                    <button
+                        class="px-5 py-2.5 bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg text-sm font-semibold transition-colors">
+                        Read
+                    </button>
+                    <button
+                        class="px-5 py-2.5 bg-transparent border border-slate-500 text-slate-400 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 rounded-lg text-sm font-semibold transition-colors ml-auto">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- TAB 3: Web Search -->
+        @if (activeTab() === 'websearch') {
+        <div id="tab-websearch" class="tab-content active">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-[2] relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" placeholder="Search the web..."
+                        class="w-full pl-11 pr-4 py-3.5 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all shadow-[0_0_15px_rgba(99,102,241,0.05)]">
+                </div>
+                <button
+                    class="flex-1 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all">
+                    Search
+                </button>
+            </div>
+        </div>
+        }
+
+        <!-- TAB 4: Tags -->
+        @if (activeTab() === 'tags') {
+        <div id="tab-tags" class="tab-content active">
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <input type="text" placeholder="Tag name"
+                    class="flex-1 px-4 py-3.5 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-all">
+                <button
+                    class="flex-1 md:flex-none md:px-12 py-3.5 bg-[#403be4] hover:bg-blue-600 text-white font-bold rounded-xl shadow-md transition-all">
+                    Add tag
+                </button>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <div
+                    class="bg-[#2d3248] border border-slate-600/50 hover:border-indigo-500/50 rounded-lg pl-3 pr-1.5 py-1.5 flex items-center gap-2 transition-colors group">
+                    <span class="text-sm font-semibold text-indigo-400">develop</span>
+                    <button
+                        class="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors focus:outline-none"
+                        title="Delete tag">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+    </div>
+</main>
