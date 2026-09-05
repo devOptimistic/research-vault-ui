@@ -7,11 +7,10 @@ import { NoteCard } from '../note-card/note-card';
   selector: 'app-note-list',
   standalone: true,
   imports: [CommonModule, NoteCard],
-  providers: [NoteStore], // Provide store locally for this component scope
   template: `
     <div class="space-y-4">
       @for (note of noteStore.notes(); track note.id) {
-        <app-note-card [note]="note" (deleteNote)="noteStore.deleteNote($event)" />
+        <app-note-card [note]="note" />
       } @empty {
         @if (!noteStore.isLoading()) {
           <div class="text-center py-10 text-slate-400 bg-[#2d3248]/50 rounded-xl border border-slate-600/30">

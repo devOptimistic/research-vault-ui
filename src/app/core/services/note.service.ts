@@ -17,7 +17,10 @@ export interface CreateNoteDto {
   title: string;
   content?: string;
   source_link_id?: string | null;
+  tag_ids?: string[]; // Array of tag IDs associated with the note
 }
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +45,14 @@ export class NoteService {
   /**
    * Delete a note by its ID
    */
-  deleteNote(noteId: string): Observable<any> {
-    return this.api.delete(`/notes/${noteId}`);
+  deleteNote(projectId: string, noteId: string): Observable<any> {
+    return this.api.delete(`/projects/${projectId}/notes/${noteId}`);
+  }
+
+  /**
+   * Update a note by its ID
+   */
+  updateNote(projectId: string, noteId: string, dto: CreateNoteDto): Observable<Note> {
+    return this.api.put<Note>(`/projects/${projectId}/notes/${noteId}`, dto);
   }
 }
