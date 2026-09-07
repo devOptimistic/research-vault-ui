@@ -6,15 +6,15 @@ export interface Link {
     id: string;
     project_id: string;
     url: string;
-    title?: string;
+    title: string;
     snippet?: string;
-    summary?: string;
     search_query?: string;
-    extracted_content?: string;
-    extraction_status?: string; // pending, failed, completed
-    status?: string;
-    tags?: string[];
+    extracted_content?: string | null;
+    extraction_status: 'pending' | 'completed' | 'failed';
+    status: 'to_read' | 'reading' | 'done' | 'archived';
+    summary?: string | null;
     created_at: string;
+    tags?: Array<{ id: string; name: string }>;
 }
 
 @Injectable({
@@ -23,24 +23,23 @@ export interface Link {
 export class LinkService {
     private readonly api = inject(ApiService);
 
-    /**
-     * Fetch all links associated with a specific project
-     */
-    getLinks(projectId: string): Observable<Link[]> {
-        return this.api.get<Link[]>(`/projects/${projectId}/links`);
+    // Get all links for a project (with optional status filter)
+    getLinks(projectId: string): Observable<any[]> {
+        return this.api.get<any[]>(`/projects/${projectId}/links`);
     }
 
-    /**
-     * Re-extract content for a specific link
-     */
-    reExtractLink(projectId: string, linkId: string): Observable<any> {
-        return this.api.post(`/projects/${projectId}/links/${linkId}/extract`, {});
+    // Create/Save a new link
+    createLink(projectId: string, dto: any): Observable<any> {
+        return this.api.post<any>(`/projects/${projectId}/links`, dto);
     }
 
-    /**
-     * Delete a link by its ID
-     */
-    deleteLink(projectId: string, linkId: string): Observable<any> {
-        return this.api.delete(`/projects/${projectId}/links/${linkId}`);
+    // Delete a link
+    deleteLink(projectId: string, linkId: string): Observable<void> {
+        return this.api.delete<void>(`/projects/${projectId}/links/${linkId}`);
+    }
+
+    // Get a single saved link by ID to check extraction status/content
+    getLinkById(projectId: string, linkId: string): Observable<any> {
+        return this.api.get<any>(`/projects/${projectId}/links/${linkId}`);
     }
 }

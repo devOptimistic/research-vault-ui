@@ -13,7 +13,7 @@ import { LinkStore } from '../../../stores/link.store';
         <app-link-card 
           [link]="link" 
           (deleteLink)="linkStore.deleteLink($event)" 
-          (reExtract)="linkStore.reExtractLink($event)" />
+          (reExtract)="linkStore.refreshLink({ projectId: projectId(), linkId: link.id })" />
       } @empty {
         @if (!linkStore.isLoading()) {
           <div class="text-center py-12 text-slate-400 bg-[#2d3248]/50 rounded-2xl border border-slate-600/30">

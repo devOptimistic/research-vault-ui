@@ -40,24 +40,6 @@ export const LinkStore = signalStore(
             )
         ),
 
-        // Re-extract link content
-        reExtractLink: rxMethod<{ projectId: string; linkId: string }>(
-            pipe(
-                switchMap(({ projectId, linkId }) =>
-                    linkService.reExtractLink(projectId, linkId).pipe(
-                        tap({
-                            next: () => {
-                                notificationService.show('Extraction triggered successfully', 'success');
-                            },
-                            error: () => {
-                                notificationService.show('Failed to trigger extraction', 'error');
-                            }
-                        })
-                    )
-                )
-            )
-        ),
-
         // Delete a link by its ID
         deleteLink: rxMethod<{ projectId: string; linkId: string }>(
             pipe(
@@ -77,7 +59,47 @@ export const LinkStore = signalStore(
                     )
                 )
             )
-        )
+        ),
 
+        createLink: rxMethod<{ projectId: string; dto: any }>(
+            pipe(
+                switchMap(({ projectId, dto }) =>
+                    linkService.createLink(projectId, dto).pipe(
+                        tap({
+                            next: (newLink) => {
+                                patchState(store, (state) => ({
+                                    links: [newLink, ...state.links]
+                                }));
+                                notificationService.show('Link saved successfully', 'success');
+                            },
+                            error: () => {
+                                notificationService.show('Failed to save link', 'error');
+                            }
+                        })
+                    )
+                )
+            )
+        ),
+
+        // Refresh or check extraction status of a specific link
+        refreshLink: rxMethod<{ projectId: string; linkId: string }>(
+            pipe(
+                switchMap(({ projectId, linkId }) =>
+                    linkService.getLinkById(projectId, linkId).pipe(
+                        tap({
+                            next: (updatedLink) => {
+                                patchState(store, (state) => ({
+                                    links: state.links.map(l => l.id === linkId ? updatedLink : l)
+                                }));
+                                notificationService.show('Link status updated', 'success');
+                            },
+                            error: () => {
+                                notificationService.show('Failed to fetch link status', 'error');
+                            }
+                        })
+                    )
+                )
+            )
+        )
     }))
 );

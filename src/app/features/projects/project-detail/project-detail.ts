@@ -8,10 +8,11 @@ import { LinkList } from "../../links/link-list/link-list";
 import { TagList } from "../../tags/tag-list/tag-list";
 import { TagCreate } from "../../tags/tag-create/tag-create";
 import { ProjectStore } from '../../../stores/project.store';
+import { WebSearch } from "../../web-search/web-search";
 
 @Component({
   selector: 'app-project-detail',
-  imports: [CommonModule, RouterLink, NoteList, NoteCreate, LinkList, TagList],
+  imports: [CommonModule, RouterLink, NoteList, NoteCreate, LinkList, TagList, WebSearch],
   templateUrl: './project-detail.html'
 })
 export class ProjectDetail implements OnInit {
