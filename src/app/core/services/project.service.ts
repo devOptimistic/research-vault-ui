@@ -34,4 +34,11 @@ export class ProjectService {
   createProject(dto: CreateProjectDto): Observable<Project> {
     return this.api.post<Project>('/projects', dto);
   }
+
+  // Export project as Markdown
+  exportMarkdown(projectId: string): Observable<string> {
+    return this.api.get<string>(`/projects/${projectId}/export/markdown`, {
+      responseType: 'text' as 'json'
+    });
+  }
 }
