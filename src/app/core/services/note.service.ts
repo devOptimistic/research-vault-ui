@@ -55,4 +55,18 @@ export class NoteService {
   updateNote(projectId: string, noteId: string, dto: CreateNoteDto): Observable<Note> {
     return this.api.put<Note>(`/projects/${projectId}/notes/${noteId}`, dto);
   }
+
+  /**
+ * Attach tags to a specific note
+ */
+  attachTags(projectId: string, noteId: string, tagIds: string[]): Observable<any> {
+    return this.api.post(`/projects/${projectId}/notes/${noteId}/tags`, { tag_ids: tagIds });
+  }
+
+  /**
+   * Detach a specific tag from a note
+   */
+  detachTag(projectId: string, noteId: string, tagId: string): Observable<any> {
+    return this.api.delete(`/projects/${projectId}/notes/${noteId}/tags/${tagId}`);
+  }
 }

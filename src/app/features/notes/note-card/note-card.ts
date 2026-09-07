@@ -5,6 +5,8 @@ import { Modal } from '../../../shared/components/modal/modal';
 import { Note } from '../../../core/services/note.service';
 import { LinkStore } from '../../../stores/link.store';
 import { NoteStore } from '../../../stores/note.store';
+import { TagStore } from '../../../stores/tag.store';
+import { TagItem } from '../../tags/tag-item/tag-item';
 
 @Component({
   selector: 'app-note-card',
@@ -36,33 +38,62 @@ import { NoteStore } from '../../../stores/note.store';
           </a>
         }
 
-        <!-- Render Tags if available -->
+        <!-- Render Attached Tags safely -->
         @if (note().tags && note().tags.length > 0) {
-          <div class="flex flex-wrap gap-2 mb-6">
+          <div class="flex flex-wrap gap-2 mb-4">
             @for (tag of note().tags; track tag) {
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-500/20 border border-indigo-500/30 text-xs font-semibold text-indigo-300">
-                {{ tag }}
-              </span>
+              <div class="inline-flex bg-slate-800 border border-slate-600/50 hover:border-indigo-500/50 rounded-lg pl-3 pr-1.5 py-1.5 items-center gap-2 transition-colors group">
+                <span class="text-xs font-semibold text-indigo-400">{{ getTagName(tag) }}</span>
+                <button (click)="onDetachTag(tag)"
+                        class="p-1 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors focus:outline-none cursor-pointer"
+                        title="Detach tag">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
             }
+          </div>
+        }
+
+        <!-- Inline Available Tags Drawer -->
+        @if (isTagDrawerOpen()) {
+          <div class="mb-4 p-4 bg-slate-800/60 rounded-xl border border-slate-700/60 animate-fadeIn">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-semibold text-slate-300">Available Tags (Click to attach):</span>
+              <button (click)="toggleTagDrawer()" class="text-xs text-slate-400 hover:text-white cursor-pointer">Close</button>
+            </div>
+            
+            <div class="flex flex-wrap gap-2">
+              @for (tag of getUnattachedTags(); track tag.id) {
+                <button (click)="onAttachTag(tag)"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-xs font-semibold text-indigo-300 transition-colors cursor-pointer">
+                  <span>+ {{ tag.name }}</span>
+                </button>
+              } @empty {
+                <span class="text-xs text-slate-500 italic">No more tags available to attach.</span>
+              }
+            </div>
           </div>
         }
 
         <!-- Card Action Buttons -->
         <div class="flex gap-3">
-          <button class="px-4 py-2 border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-medium transition-colors">
-            Attach tag
+          <button (click)="toggleTagDrawer()" 
+                  class="px-4 py-2 border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-medium transition-colors cursor-pointer">
+            {{ isTagDrawerOpen() ? 'Close Tags' : 'Attach tag' }}
           </button>
-          <button (click)="openEditModal()" class="cursor-pointer px-4 py-2 border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-medium transition-colors">
+          <button (click)="openEditModal()" class="px-4 py-2 border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-medium transition-colors cursor-pointer">
             Edit
           </button>
-          <button (click)="onDelete()" class="cursor-pointer px-4 py-2 border border-slate-500 text-slate-300 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 rounded-lg text-sm font-medium transition-colors">
+          <button (click)="onDelete()" class="px-4 py-2 border border-slate-500 text-slate-300 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 rounded-lg text-sm font-medium transition-colors cursor-pointer">
             Delete
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Edit Note Modal embedding NoteCreate component in edit mode -->
+    <!-- Edit Note Modal -->
     <app-modal [isOpen]="isEditModalOpen()" title="Edit Note" (close)="closeEditModal()">
       <app-note-create 
         [projectId]="note().project_id" 
@@ -75,38 +106,73 @@ import { NoteStore } from '../../../stores/note.store';
 export class NoteCard {
   readonly linkStore = inject(LinkStore);
   readonly noteStore = inject(NoteStore);
+  readonly tagStore = inject(TagStore);
 
-  // Required input for the note object
   note = input.required<Note>();
 
-  // Modal visibility state signal
   isEditModalOpen = signal<boolean>(false);
+  isTagDrawerOpen = signal<boolean>(false);
 
-  /**
-   * Helper method to find and return the link object using its ID from LinkStore
-   */
   getSourceLink(linkId: string | null) {
     if (!linkId) return null;
     return this.linkStore.links().find(l => l.id === linkId);
   }
 
-  /**
-   * Open the edit modal
-   */
+  toggleTagDrawer(): void {
+    const currentState = this.isTagDrawerOpen();
+    this.isTagDrawerOpen.set(!currentState);
+    if (!currentState) {
+      this.tagStore.loadTags(this.note().project_id);
+    }
+  }
+
+  getTagName(tag: any): string {
+    if (typeof tag === 'string') return tag;
+    return tag?.name || tag?.title || '';
+  }
+
+  getTagId(tag: any): string {
+    if (typeof tag === 'string') {
+      const found = this.tagStore.tags().find(t => t.name === tag);
+      return found ? found.id : '';
+    }
+    return tag?.id || '';
+  }
+
+  getUnattachedTags() {
+    const currentNoteTagNames = (this.note().tags || []).map(t => this.getTagName(t));
+    return this.tagStore.tags().filter(t => !currentNoteTagNames.includes(t.name));
+  }
+
+  onAttachTag(tag: { id: string; name: string }): void {
+    this.noteStore.attachTag({
+      projectId: this.note().project_id,
+      noteId: this.note().id,
+      tag: tag
+    });
+  }
+
+  onDetachTag(tag: any): void {
+    const tagId = this.getTagId(tag);
+    const tagName = this.getTagName(tag);
+    if (tagId && tagName) {
+      this.noteStore.detachTag({
+        projectId: this.note().project_id,
+        noteId: this.note().id,
+        tagId: tagId,
+        tagName: tagName
+      });
+    }
+  }
+
   openEditModal(): void {
     this.isEditModalOpen.set(true);
   }
 
-  /**
-   * Close the edit modal
-   */
   closeEditModal(): void {
     this.isEditModalOpen.set(false);
   }
 
-  /**
-   * Trigger note deletion via NoteStore
-   */
   onDelete(): void {
     this.noteStore.deleteNote({
       projectId: this.note().project_id,

@@ -2,6 +2,7 @@ import { Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Project } from '../../../core/services/project.service';
+import { ProjectStore } from '../../../stores/project.store';
 
 @Component({
   selector: 'app-project-card',
@@ -31,8 +32,10 @@ import { Project } from '../../../core/services/project.service';
 export class ProjectCard {
   project = input.required<Project>();
   private readonly router = inject(Router);
-
+  readonly projectStore = inject(ProjectStore);
+  
   openProject(): void {
+    this.projectStore.setCurrentProject(this.project());
     this.router.navigate(['/projects', this.project().id]);
   }
 }

@@ -98,6 +98,69 @@ export const NoteStore = signalStore(
           )
         )
       )
+    ),
+
+    // Attach a tag to a note with instant state update
+    attachTag: rxMethod<{ projectId: string; noteId: string; tag: { id: string; name: string } }>(
+      pipe(
+        switchMap(({ projectId, noteId, tag }) =>
+          noteService.attachTags(projectId, noteId, [tag.id]).pipe(
+            tap({
+              next: () => {
+                patchState(store, (state) => ({
+                  notes: state.notes.map(n => {
+                    if (n.id === noteId) {
+                      const existingTags = n.tags || [];
+                      // Prevent duplicates in UI
+                      const exists = existingTags.some(t => (typeof t === 'string' ? t === tag.name : t.name === tag.name));
+                      if (!exists) {
+                        return { ...n, tags: [...existingTags, tag] };
+                      }
+                    }
+                    return n;
+                  })
+                }));
+                notificationService.show('Tag attached successfully', 'success');
+              },
+              error: () => {
+                notificationService.show('Failed to attach tag', 'error');
+              }
+            })
+          )
+        )
+      )
+    ),
+
+    // Detach a tag from a note with instant state update
+    detachTag: rxMethod<{ projectId: string; noteId: string; tagId: string; tagName: string }>(
+      pipe(
+        switchMap(({ projectId, noteId, tagId, tagName }) =>
+          noteService.detachTag(projectId, noteId, tagId).pipe(
+            tap({
+              next: () => {
+                patchState(store, (state) => ({
+                  notes: state.notes.map(n => {
+                    if (n.id === noteId) {
+                      return {
+                        ...n,
+                        tags: (n.tags || []).filter(t => {
+                          const name = typeof t === 'string' ? t : t.name;
+                          return name !== tagName;
+                        })
+                      };
+                    }
+                    return n;
+                  })
+                }));
+                notificationService.show('Tag detached successfully', 'success');
+              },
+              error: () => {
+                notificationService.show('Failed to detach tag', 'error');
+              }
+            })
+          )
+        )
+      )
     )
 
   }))

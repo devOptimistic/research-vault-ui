@@ -14,8 +14,8 @@
                 </svg>
                 Back to projects
             </a>
-            <h2 class="text-3xl font-extrabold text-white tracking-tight">My Project</h2>
-            <p class="text-slate-400 mt-1 text-sm font-medium">Project ID: {{ projectId() }}</p>
+            <h2 class="text-3xl font-extrabold text-white tracking-tight">{{ projectStore.currentProject()?.name || 'Project Details' }}</h2>
+            <!-- <p class="text-slate-400 mt-1 text-sm font-medium">Project ID: {{ projectId() }}</p> -->
         </div>
 
         <!-- Global Search & Export -->

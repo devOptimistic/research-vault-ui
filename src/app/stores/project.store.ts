@@ -6,12 +6,14 @@ import { pipe, tap, switchMap, catchError, of } from 'rxjs';
 
 interface ProjectState {
   projects: Project[];
+  currentProject: Project | null;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: ProjectState = {
   projects: [],
+  currentProject: null,
   isLoading: false,
   error: null,
 };
@@ -20,6 +22,21 @@ export const ProjectStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
   withMethods((store, projectService = inject(ProjectService)) => ({
+
+    // Set the selected project directly when clicked
+    setCurrentProject(project: Project) {
+      patchState(store, { currentProject: project });
+    },
+
+    // Optional: if user reloads the page directly on detail URL, 
+    // we can find it from already loaded projects if available
+    setProjectById(projectId: string) {
+      const found = store.projects().find(p => p.id === projectId);
+      if (found) {
+        patchState(store, { currentProject: found });
+      }
+    },
+
     /**
      * Load all projects from the backend
      */
