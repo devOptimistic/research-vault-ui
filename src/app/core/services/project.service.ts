@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
+import { HttpParams } from '@angular/common/http';
 
 export interface Project {
   id: string;               // UUID string based on backend DTO
@@ -15,6 +16,13 @@ export interface CreateProjectDto {
   description?: string;
 }
 
+export interface SearchResultItem {
+  type: 'note' | 'link'; // یا مقادیر مشابه خروجی
+  id: string;
+  title: string;
+  snippet: string;
+  rank: number;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -40,5 +48,11 @@ export class ProjectService {
     return this.api.get<string>(`/projects/${projectId}/export/markdown`, {
       responseType: 'text' as 'json'
     });
+  }
+
+  // Search notes and saved links in the current project
+  searchCollected(projectId: string, query: string): Observable<SearchResultItem[]> {
+    const params = new HttpParams().set('q', query);
+    return this.api.get<SearchResultItem[]>(`/projects/${projectId}/search-collected`, { params });
   }
 }

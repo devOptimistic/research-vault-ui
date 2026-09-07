@@ -11,9 +11,10 @@ import { ProjectStore } from '../../../stores/project.store';
 import { WebSearch } from "../../web-search/web-search";
 import { ProjectService } from '../../../core/services/project.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ProjectSearch } from "../project-search/project-search";
 @Component({
   selector: 'app-project-detail',
-  imports: [CommonModule, RouterLink, NoteList, NoteCreate, LinkList, TagList, WebSearch],
+  imports: [CommonModule, RouterLink, NoteList, NoteCreate, LinkList, TagList, WebSearch, ProjectSearch],
   templateUrl: './project-detail.html'
 })
 export class ProjectDetail implements OnInit {
