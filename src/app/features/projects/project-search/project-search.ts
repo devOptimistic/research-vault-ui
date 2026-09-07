@@ -7,12 +7,10 @@ import { ProjectService, SearchResultItem } from '../../../core/services/project
   standalone: true,
   imports: [CommonModule],
   templateUrl: './project-search.html',
-  styleUrls: ['./project-search.css']
 })
 export class ProjectSearch {
   private readonly projectService = inject(ProjectService);
 
-  // دریافت شناسه پروژه به عنوان Input
   readonly projectId = input.required<string>();
 
   searchQuery = signal<string>('');

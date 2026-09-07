@@ -17,7 +17,7 @@ export interface CreateProjectDto {
 }
 
 export interface SearchResultItem {
-  type: 'note' | 'link'; // یا مقادیر مشابه خروجی
+  type: 'note' | 'link'; 
   id: string;
   title: string;
   snippet: string;
