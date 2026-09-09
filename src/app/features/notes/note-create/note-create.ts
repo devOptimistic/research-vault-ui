@@ -15,19 +15,19 @@ import { Note } from '../../../core/services/note.service';
         <!-- Title Input -->
         <input type="text" formControlName="title" placeholder="Note title"
                class="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-all">
-        
-        <!-- Source Link Selector -->
-        <select formControlName="source_link_id" 
-                class="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-slate-300 focus:outline-none focus:border-indigo-400 transition-all cursor-pointer">
-          <option [ngValue]="null">No source link</option>
-          @for (link of linkStore.links(); track link.id) {
-            <option [value]="link.id">{{ link.title || link.url }}</option>
-          }
-        </select>
+        @if(!defaultLinkId()) {
+          <select formControlName="source_link_id" 
+        class="flex-1 w-0 min-w-0 px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-slate-300 focus:outline-none focus:border-indigo-400 transition-all cursor-pointer truncate">
+            <option [ngValue]="null">No source link</option>
+            @for (link of linkStore.links(); track link.id) {
+              <option [value]="link.id" class="truncate">{{ link.title || link.url }}</option>
+            }
+          </select>
+        }
       </div>
 
       <!-- Content Textarea -->
-      <textarea formControlName="content" placeholder="Note content (optional)" rows="4"
+      <textarea formControlName="content" placeholder="Note content (optional)" rows="5"
                 class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-all resize-none"></textarea>
       
       <!-- Submit Button -->
@@ -50,15 +50,16 @@ export class NoteCreate implements OnInit {
   readonly noteStore = inject(NoteStore);
   readonly linkStore = inject(LinkStore);
 
-  // Inputs for project ID and optional note data for edit mode
+  // Inputs
+  readonly defaultLinkId = input<string>();
+  readonly defaultTitle = input<string>();
   projectId = input.required<string>();
   noteToEdit = input<Note | null>(null);
 
-  // Outputs to handle actions externally if needed
+  // Outputs
   saved = output<void>();
   cancelled = output<void>();
 
-  // Check if component is in edit mode
   isEditMode = signal<boolean>(false);
 
   noteForm = this.fb.group({
@@ -68,7 +69,7 @@ export class NoteCreate implements OnInit {
   });
 
   constructor() {
-    // Watch for changes in noteToEdit input to patch form values dynamically
+    // مدیریت حالت ویرایش (Edit Mode)
     effect(() => {
       const note = this.noteToEdit();
       if (note) {
@@ -80,16 +81,32 @@ export class NoteCreate implements OnInit {
         });
       } else {
         this.isEditMode.set(false);
-        this.noteForm.reset({ source_link_id: null });
+        // اگر در حالت ایجاد بوده‌ایم، مقادیر پیش‌فرض ورودی‌ها را اعمال می‌کنیم
+        this.noteForm.patchValue({
+          title: this.defaultTitle() || '',
+          source_link_id: this.defaultLinkId() || null
+        });
+      }
+    });
+
+    // اعمال مقادیر پیش‌فرض در صورت تغییر داینامیک Inputs (مثل باز شدن از صفحه Reader)
+    effect(() => {
+      const defTitle = this.defaultTitle();
+      const defLink = this.defaultLinkId();
+
+      if (!this.noteToEdit()) {
+        if (defTitle) {
+          this.noteForm.patchValue({ title: defTitle });
+        }
+        if (defLink) {
+          this.noteForm.patchValue({ source_link_id: defLink });
+        }
       }
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
-  /**
-   * Handle form submission for both create and update operations
-   */
   onSubmit(): void {
     if (this.noteForm.invalid || !this.projectId()) return;
 
@@ -97,7 +114,6 @@ export class NoteCreate implements OnInit {
     const currentNote = this.noteToEdit();
 
     if (this.isEditMode() && currentNote) {
-      // Update existing note
       this.noteStore.updateNote({
         projectId: this.projectId(),
         noteId: currentNote.id,
@@ -109,17 +125,16 @@ export class NoteCreate implements OnInit {
         }
       });
     } else {
-      // Create new note
       this.noteStore.createNote({
         projectId: this.projectId(),
-        dto: { 
-          title: title!, 
-          content: content || '', 
+        dto: {
+          title: title!,
+          content: content || '',
           source_link_id: source_link_id || null,
-          tag_ids: [] 
+          tag_ids: []
         }
       });
-      this.noteForm.reset({ source_link_id: null });
+      this.noteForm.reset({ source_link_id: this.defaultLinkId() || null, title: this.defaultTitle() || '' });
     }
 
     this.saved.emit();

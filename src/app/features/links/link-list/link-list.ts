@@ -12,6 +12,7 @@ import { LinkStore } from '../../../stores/link.store';
       @for (link of linkStore.links(); track link.id) {
         <app-link-card 
           [link]="link" 
+          [projectId]="projectId()"
           (deleteLink)="linkStore.deleteLink($event)" 
           (reExtract)="linkStore.refreshLink({ projectId: projectId(), linkId: link.id })" />
       } @empty {

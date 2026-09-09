@@ -1,0 +1,72 @@
+<div class="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-12">
+    <div class="max-w-4xl mx-auto">
+        <!-- هدر بالای صفحه -->
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+            <a [routerLink]="['/projects', projectId()]"
+                class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-2">
+                ← Back to project
+            </a>
+
+            <button (click)="openAddNoteModal()"
+                class="px-4 py-2 bg-white hover:bg-slate-100 text-indigo-600 border border-slate-300 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer">
+                + Add note about this
+            </button>
+        </div>
+
+        @if (isLoading()) {
+        <div class="text-center py-20 text-slate-500">Loading article content...</div>
+        } @else if (linkData()) {
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 leading-tight">
+            {{ linkData().title }}
+        </h1>
+        <a [href]="linkData().url" target="_blank" class="text-xs text-indigo-600 hover:underline block mb-8">
+            {{ linkData().url }}
+        </a>
+
+        <!-- محتوای مقاله -->
+        <div (mouseup)="onTextSelection()"
+            class="prose max-w-none text-slate-700 leading-relaxed space-y-4 text-base">
+            <div [innerHTML]="linkData().extracted_content || 'No extracted content available.'"></div>
+        </div>
+        }
+
+        <!-- پاپ‌آپ هایلایت متن -->
+        @if (showHighlightPopup()) {
+        <div [style.top.px]="popupPosition().top" [style.left.px]="popupPosition().left"
+            class="absolute z-50 bg-white border border-slate-200 p-3 rounded-2xl shadow-xl w-72 backdrop-blur-md">
+            <input type="text" [value]="highlightNoteInput()"
+                (input)="highlightNoteInput.set($any($event.target).value)" placeholder="Add a note (optional)"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 mb-3 focus:outline-none focus:border-indigo-500">
+            <div class="flex items-center justify-between">
+                <div class="flex gap-1.5">
+                    <button (click)="saveHighlight('yellow')"
+                        class="w-4 h-4 rounded-full bg-yellow-200 hover:scale-110 transition-transform cursor-pointer border border-yellow-300"></button>
+                    <button (click)="saveHighlight('green')"
+                        class="w-4 h-4 rounded-full bg-emerald-300 hover:scale-110 transition-transform cursor-pointer border border-emerald-400"></button>
+                    <button (click)="saveHighlight('blue')"
+                        class="w-4 h-4 rounded-full bg-sky-300 hover:scale-110 transition-transform cursor-pointer border border-sky-400"></button>
+                    <button (click)="saveHighlight('pink')"
+                        class="w-4 h-4 rounded-full bg-pink-300 hover:scale-110 transition-transform cursor-pointer border border-pink-400"></button>
+                    <button (click)="saveHighlight('purple')"
+                        class="w-4 h-4 rounded-full bg-purple-300 hover:scale-110 transition-transform cursor-pointer border border-purple-400"></button>
+                </div>
+                <button (click)="saveHighlight('default')"
+                    class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md">
+                    Save
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+@if (showNoteModal()) {
+  <app-modal [isOpen]="showNoteModal()" (close)="closeAddNoteModal()" title="Add Note">
+  <app-note-create 
+      [projectId]="projectId()" 
+      [defaultLinkId]="linkId()"
+      [defaultTitle]="'Note on: ' + (linkData()?.title || '')"
+      (saved)="onNoteCreated()"
+      (cancelled)="closeAddNoteModal()" />
+</app-modal>
+}

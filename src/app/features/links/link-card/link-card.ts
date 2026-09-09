@@ -1,11 +1,12 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Link } from '../../../core/services/link.service';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-link-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="bg-[#2d3248] border border-slate-600/50 rounded-xl overflow-hidden shadow-inner my-4 p-6">
       
@@ -54,12 +55,11 @@ import { Link } from '../../../core/services/link.service';
         
         <!-- Left Side: Read & Re Extract Buttons -->
         <div class="flex items-center gap-3">
-          <a [href]="link().url" target="_blank" rel="noopener noreferrer"
-             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-semibold shadow-md transition-colors flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-            </svg>
+          <a [routerLink]="['/projects', projectId(), 'links', link().id, 'read']" (click)="$event.stopPropagation()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            >   </svg>
             Read
           </a>
 
@@ -85,6 +85,7 @@ import { Link } from '../../../core/services/link.service';
 })
 export class LinkCard {
   link = input.required<Link>();
+  readonly projectId = input.required<string>();
   deleteLink = output<{ projectId: string; linkId: string }>();
   reExtract = output<{ projectId: string; linkId: string }>();
 }

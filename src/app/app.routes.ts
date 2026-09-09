@@ -21,6 +21,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'projects/:projectId/links/:linkId/read',
+    loadComponent: () => import('./features/link-reader/link-reader').then(m => m.LinkReader),
+    canActivate: [authGuard]
+  },
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'
@@ -28,5 +33,6 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: 'dashboard'
-  }
+  },
+  
 ];
