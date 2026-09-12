@@ -1,6 +1,8 @@
-<div class="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-12">
-    <div class="max-w-4xl mx-auto">
-        <!-- هدر بالای صفحه -->
+<div class="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-12 relative">
+    
+    <div id="reader-container" class="max-w-4xl mx-auto relative">
+        
+        <!-- Header -->
         <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
             <a [routerLink]="['/projects', projectId()]"
                 class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-2">
@@ -14,29 +16,36 @@
         </div>
 
         @if (isLoading()) {
-        <div class="text-center py-20 text-slate-500">Loading article content...</div>
+            <div class="text-center py-20 text-slate-500">Loading article content...</div>
         } @else if (linkData()) {
-        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 leading-tight">
-            {{ linkData().title }}
-        </h1>
-        <a [href]="linkData().url" target="_blank" class="text-xs text-indigo-600 hover:underline block mb-8">
-            {{ linkData().url }}
-        </a>
+            
+            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 leading-tight">
+                {{ linkData().title }}
+            </h1>
+            <a [href]="linkData().url" target="_blank" class="text-xs text-indigo-600 hover:underline block mb-8 truncate">
+                {{ linkData().url }}
+            </a>
 
-        <!-- محتوای مقاله -->
-        <div (mouseup)="onTextSelection()"
-            class="prose max-w-none text-slate-700 leading-relaxed space-y-4 text-base">
-            <div [innerHTML]="linkData().extracted_content || 'No extracted content available.'"></div>
-        </div>
+            <div id="article-content"
+                 (mouseup)="onTextSelection()"
+                 (mouseover)="onHighlightHover($event)"
+                 (mouseout)="onHighlightLeave($event)"
+                 class="prose max-w-none text-slate-700 leading-relaxed space-y-4 text-base text-justify">
+                
+                <div [innerHTML]="safeHtmlContent() || 'No extracted content available.'"></div>
+            </div>
+            
         }
 
-        <!-- پاپ‌آپ هایلایت متن -->
+        <!-- 1. Text Selection Popup Menu -->
         @if (showHighlightPopup()) {
         <div [style.top.px]="popupPosition().top" [style.left.px]="popupPosition().left"
-            class="absolute z-50 bg-white border border-slate-200 p-3 rounded-2xl shadow-xl w-72 backdrop-blur-md">
+            class="absolute z-40 bg-white border border-slate-200 p-3 rounded-2xl shadow-xl w-72 backdrop-blur-md">
+            
             <input type="text" [value]="highlightNoteInput()"
                 (input)="highlightNoteInput.set($any($event.target).value)" placeholder="Add a note (optional)"
                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 mb-3 focus:outline-none focus:border-indigo-500">
+            
             <div class="flex items-center justify-between">
                 <div class="flex gap-1.5">
                     <button (click)="saveHighlight('yellow')"
@@ -50,23 +59,42 @@
                     <button (click)="saveHighlight('purple')"
                         class="w-4 h-4 rounded-full bg-purple-300 hover:scale-110 transition-transform cursor-pointer border border-purple-400"></button>
                 </div>
-                <button (click)="saveHighlight('default')"
+                
+                <button (click)="saveHighlight('yellow')"
                     class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md">
                     Save
                 </button>
             </div>
         </div>
         }
+
+        <!-- 2. Hover Tooltip Menu (Deletion) -->
+        @if (activeHighlightId()) {
+        <div [style.top.px]="deletePopupPosition().top" [style.left.px]="deletePopupPosition().left"
+             (mouseenter)="onDeletePopupEnter()"
+             (mouseleave)="onDeletePopupLeave()"
+             class="absolute z-50 animate-fadeIn">
+            
+            <button (click)="confirmDeleteHighlight()"
+                    class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/95 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg backdrop-blur-sm transition-all cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Delete
+            </button>
+            
+            <div class="w-2 h-2 bg-red-500/95 rotate-45 mx-auto -mt-1 shadow-lg pointer-events-none"></div>
+        </div>
+        }
     </div>
 </div>
 
-@if (showNoteModal()) {
-  <app-modal [isOpen]="showNoteModal()" (close)="closeAddNoteModal()" title="Add Note">
-  <app-note-create 
-      [projectId]="projectId()" 
-      [defaultLinkId]="linkId()"
-      [defaultTitle]="'Note on: ' + (linkData()?.title || '')"
-      (saved)="onNoteCreated()"
-      (cancelled)="closeAddNoteModal()" />
+<!-- Modal -->
+<app-modal [isOpen]="showNoteModal()" title="Add Note for this Link" maxWidth="max-w-2xl" (close)="closeAddNoteModal()">
+    <app-note-create 
+        [projectId]="projectId()" 
+        [defaultLinkId]="linkId()"
+        [defaultTitle]="'Note on: ' + (linkData()?.title || '')"
+        (saved)="onNoteCreated()"
+        (cancelled)="closeAddNoteModal()" />
 </app-modal>
-}
